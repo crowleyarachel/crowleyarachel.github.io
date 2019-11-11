@@ -1,8 +1,90 @@
 ---
-title: "dashboard"
-output:  
-    html_document:
-    toc: true
-    toc_float: true
+title: "Dashboard: Instacart Data for Frozen Department"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
 ---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(p8105.datasets)
+library(plotly)
+```
+
+```{r}
+data("instacart")
+
+set.seed(1)
+
+instacart = instacart %>%
+  select(order_id, order_dow, order_hour_of_day, days_since_prior_order, product_name, department, aisle) %>%
+  filter(
+    department == "frozen"
+  ) 
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### "Distribution of days since prior order for each aisle in the frozen department"
+
+```{r}
+box_ggplot = 
+instacart %>%
+  mutate(aisle= fct_reorder(aisle, days_since_prior_order)) %>% 
+  ggplot(aes(x = aisle, y = days_since_prior_order, fill = aisle)) +
+  geom_boxplot() +
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(
+    x = "Aisle", 
+    y = "Days since prior order",
+    caption = "Data from instacart"
+  )
+
+ggplotly(box_ggplot)
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Order count for each aisle in the frozen department
+
+```{r}
+bar_ggplot = 
+instacart %>%
+  count(aisle) %>% 
+  mutate(aisle = fct_reorder(aisle, n)) %>%
+  ggplot(aes(x = aisle, y = n)) + geom_bar(stat = "identity") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(
+    x = "Aisle",
+    y = "Number of orders",
+    caption = "Data from instacart"
+  )
+
+ggplotly(bar_ggplot)
+
+```
+
+### Average order hour of day by order day of week for the frozen department
+
+```{r}
+plot_ggplot = 
+instacart %>%
+  filter(
+    aisle == "ice cream ice"
+  ) %>%
+    group_by(order_dow) %>%
+  summarise(mean_hour = mean(order_hour_of_day)) %>%
+  ggplot(aes(x = order_dow, y = mean_hour)) + 
+  geom_line() + labs(
+    x = "Order day of week",
+    y = "Mean hour of day",
+    caption = "Data from instacart"
+  )
+  
+ggplotly(plot_ggplot) 
+```
 

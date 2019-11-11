@@ -1,0 +1,71 @@
+---
+title: "dashboard"
+output:  
+    html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r}
+library(tidyverse)
+library(p8105.datasets)
+library(plotly)
+
+data("instacart")
+
+set.seed(1)
+
+instacart = instacart %>%
+  select(order_id, order_dow, order_hour_of_day, days_since_prior_order, product_name, department, aisle) %>%
+  filter(
+    department == "frozen"
+  ) 
+
+plot_ggplot = 
+instacart %>%
+  filter(
+    aisle == "ice cream ice"
+  ) %>%
+    group_by(order_dow) %>%
+  summarise(mean_hour = mean(order_hour_of_day)) %>%
+  ggplot(aes(x = order_dow, y = mean_hour)) + 
+  geom_line() + labs(
+    title = "Average order hour of day by order day of week for the frozen department",
+    x = "Order day of week",
+    y = "Mean hour of day",
+    caption = "Data from instacart"
+  )
+  
+ggplotly(plot_ggplot) 
+
+bar_ggplot = 
+instacart %>%
+  count(aisle) %>% 
+  mutate(aisle = fct_reorder(aisle, n)) %>%
+  ggplot(aes(x = aisle, y = n)) + geom_bar(stat = "identity") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(
+    title = "Order count for each aisle in the frozen department", 
+    x = "Aisle",
+    y = "Number of orders",
+    caption = "Data from instacart"
+  )
+
+ggplotly(bar_ggplot)
+
+box_ggplot = 
+instacart %>%
+  mutate(aisle= fct_reorder(aisle, days_since_prior_order)) %>% 
+  ggplot(aes(x = aisle, y = days_since_prior_order, fill = aisle)) +
+  geom_boxplot() +
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(
+    title = "Distribution of days since prior order for each aisle in the frozen department",
+    x = "Aisle", 
+    y = "Days since prior order",
+    caption = "Data from instacart"
+  )
+
+ggplotly(box_ggplot)
+
+
+```
